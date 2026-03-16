@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Should I Text My Ex?</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            background: radial-gradient(circle at top left, #5E2DFF, #4DD0FF, #1DE9B6);
+            color: #fff;
+            text-align: center;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin: 20px 0 10px;
+            text-shadow: 2px 2px rgba(0,0,0,0.3);
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 10px;
+            z-index: 2;
+        }
+
+        label {
+            font-size: 1.2rem;
+            margin: 10px 0 5px;
+        }
+
+        /* Sliders */
+        input[type="range"] {
+            width: 300px;
+            height: 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            outline: none;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #4DD0FF, #1DE9B6);
+        }
+
+        #alcohol-text, #breakup-text {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .time-options {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .time-options button {
+            margin: 0 5px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            background-color: #BDA2FF;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .time-options button.active {
+            background-color: #1DE9B6;
+            transform: scale(1.1);
+        }
+
+        #submit-btn {
+            margin-top: 10px;
+            padding: 15px 30px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-radius: 25px;
+            border: none;
+            background-color: #4DD0FF;
+            color: #fff;
+            cursor: pointer;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+        }
+
+        #submit-btn:hover { transform: scale(1.1); }
+
+        #response-box {
+            position: relative;
+            margin-top: 30px;
+            width: 360px;
+            min-height: 270px;
+            background-color: rgba(255, 182, 193, 0.85);
+            border: 6px solid #BDA2FF;
+            border-radius: 25px;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.5s ease;
+            z-index: 3;
+        }
+
+        #response-box.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        #response-text {
+            font-size: 1.5rem;
+            margin: 0;
+            padding: 10px;
+            z-index: 2;
+            position: relative;
+            font-weight: bold;
+            text-align: center;
+            text-shadow: 1px 1px rgba(0,0,0,0.2);
+            background-color: rgba(189, 162, 255, 0.5);
+            border-radius: 15px;
+        }
+
+        .bg-icon {
+            position: absolute;
+            width: 85px;
+            height: 85px;
+            opacity: 0.5;
+            pointer-events: none;
+            animation: floatBack 3s ease-in-out infinite alternate;
+            transition: opacity 0.5s ease;
+        }
+
+        @keyframes floatBack {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<h1>Should I Text My Ex?</h1>
+
+<div class="controls">
+    <label for="breakup">Time Since Breakup (days)</label>
+    <input type="range" id="breakup" min="0" max="730" value="30">
+    <div id="breakup-text">30 days</div>
+
+    <label for="alcohol">Alcohol Level</label>
+    <input type="range" id="alcohol" min="0" max="3" value="0">
+    <div id="alcohol-text">🧃 Sober</div>
+
+    <label>Time of Day</label>
+    <div class="time-options">
+        <button data-time="day" class="time-btn active">🌞 Morning</button>
+        <button data-time="evening" class="time-btn">🌙 Evening</button>
+        <button data-time="night" class="time-btn">🌚 Late Night</button>
+    </div>
+
+    <button id="submit-btn">Should I Text?</button>
+</div>
+
+<!-- Response Box -->
+<div id="response-box">
+    <p id="response-text"></p>
+</div>
+
+<!-- Background icons -->
+<div id="background-icons"></div>
+
+<script>
+    const alcoholSlider = document.getElementById('alcohol');
+    const alcoholLabel = document.getElementById('alcohol-text');
+    const alcoholTextArr = ["🧃 Sober", "🍷 One drink", "🍸 Tipsy", "🥴 I miss them"];
+    alcoholSlider.addEventListener('input', () => {
+        alcoholLabel.textContent = alcoholTextArr[alcoholSlider.value];
+    });
+
+    const breakupSlider = document.getElementById('breakup');
+    const breakupText = document.getElementById('breakup-text');
+    breakupSlider.addEventListener('input', () => {
+        breakupText.textContent = breakupSlider.value + " days";
+    });
+
+    let selectedTime = "day";
+    const timeButtons = document.querySelectorAll('.time-btn');
+    timeButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            timeButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedTime = btn.dataset.time;
+        });
+    });
+
+    // Background floating icons - bg1, bg2, bg3
+    const defaultBgIcons = ["bg1.PNG", "bg2.PNG", "bg3.PNG"];
+    const bgContainer = document.getElementById('background-icons');
+    const cols = 6;
+    const rows = 5;
+    const bgImages = []; // store references to update later
+
+    // shuffle1 - Build array of all grid positions and shuffle them
+    const positions = [];
+    for(let r=0; r<rows; r++){
+        for(let c=0; c<cols; c++){
+            positions.push({r, c});
+        }
+    }
+    // shuffle2 - Fisher-Yates shuffle
+    for(let i = positions.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [positions[i], positions[j]] = [positions[j], positions[i]];
+    }
+
+    positions.forEach((pos, idx) => {
+        const img = document.createElement('img');
+        img.src = defaultBgIcons[idx % defaultBgIcons.length];
+        img.className = "bg-icon";
+        img.style.top = (pos.r * (100/rows) + (100/rows)/2 - 2.5) + "vh";
+        img.style.left = (pos.c * (100/cols) + (100/cols)/2 - 2.5) + "vw";
+        img.style.animationDelay = (idx * 0.5) + "s";
+        bgContainer.appendChild(img);
+        bgImages.push(img);
+    });
+
+    const responseBox = document.getElementById('response-box');
+    const responseText = document.getElementById('response-text');
+
+    function showResponse(message, iconSrc){
+        responseText.textContent = message;
+
+        // Swap all background icons to the response icon
+        bgImages.forEach(img => {
+            img.src = iconSrc;
+        });
+
+        responseBox.classList.add('show');
+    }
+
+    // Button click logic
+    document.getElementById('submit-btn').addEventListener('click', ()=>{
+        const days = parseInt(breakupSlider.value);
+        const alcohol = parseInt(alcoholSlider.value);
+        let message="", iconSrc="";
+
+        // Score-based system: higher = worse idea to text
+        let score = 0;
+
+        // Alcohol contribution (0-30)
+        score += alcohol * 10;
+
+        // Time of day contribution (0-25)
+        if(selectedTime === "night") score += 25;
+        else if(selectedTime === "evening") score += 12;
+        else score += 0;
+
+        // Breakup recency contribution (0-30)
+        if(days < 7) score += 30;
+        else if(days < 30) score += 25;
+        else if(days < 90) score += 18;
+        else if(days < 180) score += 10;
+        else if(days < 365) score += 5;
+        else score += 0;
+
+        // Dangerous combos — bonus penalties
+        if(alcohol >= 2 && selectedTime === "night") score += 15;
+        if(days < 30 && alcohol >= 1) score += 10;
+        if(days < 7 && selectedTime === "night") score += 10;
+
+        // Determine result based on score
+        if(score >= 70){
+            message = "🚨 ABSOLUTELY NOT. This is a code red. Put the phone in the freezer.";
+            iconSrc = "toxic.png";
+        } else if(score >= 55){
+            message = "☠️ Terrible idea. You're drunk, it's late, and this will end badly.";
+            iconSrc = "toxic.png";
+        } else if(score >= 45){
+            message = "🚩 Major red flags. Your future self is begging you to stop.";
+            iconSrc = "redflag.png";
+        } else if(score >= 35){
+            message = "👻 This has '2am regret' written all over it. Sleep on it.";
+            iconSrc = "ghost.png";
+        } else if(score >= 25){
+            message = "🧠❤️ Your brain says no, your heart says yes… probably still a no.";
+            iconSrc = "brainheart.png";
+        } else if(score >= 15){
+            message = "🍷 Hmm… it's risky. Maybe write it out but don't hit send yet.";
+            iconSrc = "wine.png";
+        } else if(score >= 5){
+            message = "🤔 Okay maybe… but keep it casual. No essays. No love poems.";
+            iconSrc = "brainheart.png";
+        } else {
+            message = "✅ You're sober, it's daytime, and it's been ages. Go for it… carefully.";
+            iconSrc = "wine.png";
+        }
+
+        showResponse(message, iconSrc);
+    });
+</script>
+</body>
+</html>

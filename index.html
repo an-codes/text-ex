@@ -8,8 +8,9 @@
         body {
             font-family: 'Comic Sans MS', cursive, sans-serif;
             margin: 0;
-            padding: 0;
-            overflow: hidden;
+            padding: 20px 10px;
+            overflow-x: hidden;
+            overflow-y: auto;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -19,11 +20,16 @@
             color: #fff;
             text-align: center;
             position: relative;
+            box-sizing: border-box;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
         }
 
         h1 {
-            font-size: 3rem;
-            margin: 20px 0 10px;
+            font-size: clamp(1.8rem, 5vw, 3rem);
+            margin: 10px 0;
             text-shadow: 2px 2px rgba(0,0,0,0.3);
         }
 
@@ -33,45 +39,49 @@
             align-items: center;
             margin-top: 10px;
             z-index: 2;
+            width: 100%;
+            max-width: 400px;
         }
 
         label {
-            font-size: 1.2rem;
-            margin: 10px 0 5px;
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            margin: 8px 0 4px;
         }
 
-        /* Sliders */
         input[type="range"] {
-            width: 300px;
+            width: 80%;
+            max-width: 300px;
             height: 14px;
             border-radius: 10px;
             cursor: pointer;
             outline: none;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             background: linear-gradient(to right, #4DD0FF, #1DE9B6);
         }
 
         #alcohol-text, #breakup-text {
-            font-size: 1.2rem;
-            margin-bottom: 10px;
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            margin-bottom: 8px;
         }
 
         .time-options {
             display: flex;
             justify-content: center;
-            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
         }
 
         .time-options button {
-            margin: 0 5px;
-            padding: 10px 20px;
+            margin: 0;
+            padding: 8px 14px;
             border: none;
             border-radius: 20px;
             background-color: #BDA2FF;
             color: #fff;
             font-weight: bold;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: clamp(0.85rem, 2.5vw, 1rem);
             transition: transform 0.2s, background-color 0.2s;
         }
 
@@ -82,8 +92,8 @@
 
         #submit-btn {
             margin-top: 10px;
-            padding: 15px 30px;
-            font-size: 1.3rem;
+            padding: 12px 24px;
+            font-size: clamp(1.1rem, 3vw, 1.3rem);
             font-weight: bold;
             border-radius: 25px;
             border: none;
@@ -98,9 +108,10 @@
 
         #response-box {
             position: relative;
-            margin-top: 30px;
-            width: 360px;
-            min-height: 270px;
+            margin-top: 20px;
+            width: 90%;
+            max-width: 400px;
+            min-height: 180px;
             background-color: rgba(255, 182, 193, 0.85);
             border: 6px solid #BDA2FF;
             border-radius: 25px;
@@ -114,6 +125,8 @@
             transform: scale(0.8);
             transition: all 0.5s ease;
             z-index: 3;
+            padding: 20px;
+            margin-bottom: 30px;
         }
 
         #response-box.show {
@@ -122,9 +135,9 @@
         }
 
         #response-text {
-            font-size: 1.5rem;
+            font-size: clamp(1.1rem, 3vw, 1.5rem);
             margin: 0;
-            padding: 10px;
+            padding: 12px;
             z-index: 2;
             position: relative;
             font-weight: bold;
@@ -135,13 +148,12 @@
         }
 
         .bg-icon {
-            position: absolute;
-            width: 85px;
-            height: 85px;
+            position: fixed;
             opacity: 0.5;
             pointer-events: none;
             animation: floatBack 3s ease-in-out infinite alternate;
-            transition: opacity 0.5s ease;
+            transition: opacity 0.3s ease;
+            object-fit: contain;
         }
 
         @keyframes floatBack {
@@ -206,106 +218,140 @@
         });
     });
 
-    // Background floating icons - bg1, bg2, bg3
+    // Background floating icons - adaptive grid
     const defaultBgIcons = ["bg1.PNG", "bg2.PNG", "bg3.PNG"];
     const bgContainer = document.getElementById('background-icons');
-    const cols = 6;
-    const rows = 5;
-    const bgImages = []; // store references to update later
+    const bgImages = [];
 
-    // shuffle1 - Build array of all grid positions and shuffle them
-    const positions = [];
-    for(let r=0; r<rows; r++){
-        for(let c=0; c<cols; c++){
-            positions.push({r, c});
+    function createBgIcons() {
+        // Clear existing
+        bgContainer.innerHTML = '';
+        bgImages.length = 0;
+
+        const screenW = window.innerWidth;
+        const screenH = window.innerHeight;
+
+        // Adapt icon size and grid to screen
+        let iconSize, cols, rows;
+        if (screenW < 480) {
+            iconSize = 45;
+            cols = 4;
+            rows = 5;
+        } else if (screenW < 768) {
+            iconSize = 60;
+            cols = 5;
+            rows = 5;
+        } else {
+            iconSize = 85;
+            cols = 6;
+            rows = 5;
         }
-    }
-    // shuffle2 - Fisher-Yates shuffle
-    for(let i = positions.length - 1; i > 0; i--){
-        const j = Math.floor(Math.random() * (i + 1));
-        [positions[i], positions[j]] = [positions[j], positions[i]];
+
+        const cellW = screenW / cols;
+        const cellH = screenH / rows;
+
+        // Build shuffled positions
+        const positions = [];
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                positions.push({ r, c });
+            }
+        }
+        for (let i = positions.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [positions[i], positions[j]] = [positions[j], positions[i]];
+        }
+
+        positions.forEach((pos, idx) => {
+            const img = document.createElement('img');
+            img.src = defaultBgIcons[idx % defaultBgIcons.length];
+            img.className = "bg-icon";
+            img.style.width = iconSize + "px";
+            img.style.height = iconSize + "px";
+            img.style.top = (pos.r * cellH + (cellH - iconSize) / 2) + "px";
+            img.style.left = (pos.c * cellW + (cellW - iconSize) / 2) + "px";
+            img.style.animationDelay = (idx * 0.5) + "s";
+            img.onerror = function() { this.style.display = 'none'; };
+            bgContainer.appendChild(img);
+            bgImages.push(img);
+        });
     }
 
-    positions.forEach((pos, idx) => {
-        const img = document.createElement('img');
-        img.src = defaultBgIcons[idx % defaultBgIcons.length];
-        img.className = "bg-icon";
-        img.style.top = (pos.r * (100/rows) + (100/rows)/2 - 2.5) + "vh";
-        img.style.left = (pos.c * (100/cols) + (100/cols)/2 - 2.5) + "vw";
-        img.style.animationDelay = (idx * 0.5) + "s";
-        bgContainer.appendChild(img);
-        bgImages.push(img);
+    // Create on load and resize
+    createBgIcons();
+
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(createBgIcons, 250);
     });
 
     const responseBox = document.getElementById('response-box');
     const responseText = document.getElementById('response-text');
 
-    function showResponse(message, iconSrc){
+    function showResponse(message, iconSrc) {
         responseText.textContent = message;
 
-        // Swap all background icons to the response icon
-        bgImages.forEach(img => {
-            img.src = iconSrc;
+        // Swap all background icons to the response icon with a fade
+        bgImages.forEach((img, i) => {
+            img.style.opacity = '0';
+            setTimeout(() => {
+                img.src = iconSrc;
+                img.onerror = function() { this.style.display = 'none'; };
+                img.style.display = '';
+                img.style.opacity = '0.5';
+            }, 150 + i * 30);
         });
 
         responseBox.classList.add('show');
     }
 
     // Button click logic
-    document.getElementById('submit-btn').addEventListener('click', ()=>{
+    document.getElementById('submit-btn').addEventListener('click', () => {
         const days = parseInt(breakupSlider.value);
         const alcohol = parseInt(alcoholSlider.value);
-        let message="", iconSrc="";
+        let message = "", iconSrc = "";
 
-        // Score-based system: higher = worse idea to text
         let score = 0;
-
-        // Alcohol contribution (0-30)
         score += alcohol * 10;
 
-        // Time of day contribution (0-25)
-        if(selectedTime === "night") score += 25;
-        else if(selectedTime === "evening") score += 12;
-        else score += 0;
+        if (selectedTime === "night") score += 25;
+        else if (selectedTime === "evening") score += 12;
 
-        // Breakup recency contribution (0-30)
-        if(days < 7) score += 30;
-        else if(days < 30) score += 25;
-        else if(days < 90) score += 18;
-        else if(days < 180) score += 10;
-        else if(days < 365) score += 5;
-        else score += 0;
+        if (days < 7) score += 30;
+        else if (days < 30) score += 25;
+        else if (days < 90) score += 18;
+        else if (days < 180) score += 10;
+        else if (days < 365) score += 5;
 
-        // Dangerous combos — bonus penalties
-        if(alcohol >= 2 && selectedTime === "night") score += 15;
-        if(days < 30 && alcohol >= 1) score += 10;
-        if(days < 7 && selectedTime === "night") score += 10;
+        if (alcohol >= 2 && selectedTime === "night") score += 15;
+        if (days < 30 && alcohol >= 1) score += 10;
+        if (days < 7 && selectedTime === "night") score += 10;
 
-        // Determine result based on score
-        if(score >= 70){
+        if (score >= 70) {
             message = "🚨 ABSOLUTELY NOT. This is a code red. Put the phone in the freezer.";
-            iconSrc = "toxic.png";
-        } else if(score >= 55){
+            iconSrc = "toxic.PNG";
+        } else if (score >= 55) {
             message = "☠️ Terrible idea. You're drunk, it's late, and this will end badly.";
-            iconSrc = "toxic.png";
-        } else if(score >= 45){
+            iconSrc = "toxic.PNG";
+        } else if (score >= 45) {
             message = "🚩 Major red flags. Your future self is begging you to stop.";
-            iconSrc = "redflag.png";
-        } else if(score >= 35){
+            iconSrc = "redflag.PNG";
+        } else if (score >= 35) {
             message = "👻 This has '2am regret' written all over it. Sleep on it.";
-            iconSrc = "ghost.png";
-        } else if(score >= 25){
+            iconSrc = "ghost.PNG";
+        } else if (score >= 25) {
             message = "🧠❤️ Your brain says no, your heart says yes… probably still a no.";
-            iconSrc = "brainheart.png";
-        } else if(score >= 15){
+            iconSrc = "brainheart.PNG";
+        } else if (score >= 15) {
             message = "🍷 Hmm… it's risky. Maybe write it out but don't hit send yet.";
-            iconSrc = "wine.png";
-        } else if(score >= 5){
+            iconSrc = "wine.PNG";
+        } else if (score >= 5) {
             message = "🤔 Okay maybe… but keep it casual. No essays. No love poems.";
-            iconSrc = "brainheart.png";
+            iconSrc = "brainheart.PNG";
         } else {
             message = "✅ You're sober, it's daytime, and it's been ages. Go for it… carefully.";
-            iconSrc = "wine.png";
+            iconSrc = "wine.PNG";
         }
 
         showResponse(message, iconSrc);
